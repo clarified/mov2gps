@@ -1,0 +1,277 @@
+.TH mov2gpx 1 21-1-2019
+.SH NAME
+mov2gpx \- extracts gps data from MOV video
+.SH SYNOPSIS
+.SY mov2gpx
+.OP \-O path
+.OP \-v
+.OP \-g version
+.OP \-w
+.OP \-x
+.OP \-clean [true|false]
+.OP \-debug
+.RI file
+\&.\|.\|.
+.YS
+.
+.SY mov2gps
+.B \-h
+.SY mov2gps
+.B \-V
+.
+.YS
+.SH DESCRIPTION
+.B mov2gpx
+extracts GPS data from video MOV files and writes the results to gpx
+files.
+.PP
+Many video cameras with GPS, especially dashcams, embed the GPS points into
+the recorded video. Often those records are
+.UR https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/
+MOV files
+.UE .
+mov2gps
+attempts to extract that information from such files. The encoding of
+the GPS information is not documented, but several manufacturers seem to use a
+similar approach, perhaps because they use the same chip set. Thus mov2gpx
+may or may not work: please check the output. Later versions will support
+a wider range of cameras.
+.PP
+mov2gpx is written in portable go and so should work with any operating system
+supported by go.
+.PP
+mov2gpx was forked from sggps and so inherits the Apache License, Version 2.0.
+.
+.SH OPTIONS
+.TP
+.BI file...
+One or more MOV files. At present, the files must have a .mov extension,
+case insensitive.
+.TP
+.BI \-clean
+Some cameras write spurious positions with latitude and longitude both zero
+into the video file.
+This seems to be before GPS lock is acquired, or when it is lost.
+By default, 
+.B clean
+is set to true
+which removes those points from the output. If by any remote chance you are
+at sea and close to (lat,long) = (0,0), you could set
+.B clean
+to false.
+.TP
+.BI \-debug
+If debug is true, then tracing information is sent to stderr. This information
+is only likely to be of use to a developer. It may be helpful when a new model
+of camera or a new firmware revison is encountered which mov2gpx does not
+handle properly.
+.TP
+.BI \-g\ version
+By default the output is gpx1.1. But some programs do not support all of the
+1.1 extensions. For version gpx1.0, use
+.B \-g
+0. Since gpx1.1 does not
+support the <sat> tag, setting
+.B -g
+0 can be useful when the camera reports the number of satellites acquired.
+.TP
+.BI \-h
+Help: a brief summary of usage and options.
+.TP
+.BI \-O\ directory
+With one exception
+mov2gps always writes its output to a file name matching the input video
+file with the extension changed to .gpx. By default, this file is written
+to the directory containing the input file. 
+.B \-O 
+outputdir redirects the
+output. A special case is 
+.B \-O 
+\- which writes to standard output. 
+.B \- O
+is particularly useful when the input video files are on
+flash media, perhaps sdhc cards: writing to another place conserves write
+cycles extending the life of the media.
+.TP
+.BI \-V
+Display the version of mov2gpx.
+.TP
+.BI \-v
+Slightly verbose. Normally mov2gpx is silent unless errors are encountered.
+Setting
+.B -v
+shows the name of the video file being processed: this may be 
+useful when there are many. If the camera reports the model and firmware revision,
+this is also displayed. When the output file is not directed to the implicit default
+location, that is shown: see
+.B \-O.
+.TP
+.BI \-x 
+Camera and firmware versions vary in the amount of information written
+into the video file. This must always include latitude, longitude and time.
+Often speed and course are also included.  Some firmware versions also write
+additional information in NMEA format.  By default, mov2gps examines any
+"GPGGA" records detected, and then will also write elevation, geoid and hdop
+information to the gpx track.  Of course, elevation values from typical
+consumer GPS units are likely to be rather inaccurate, but can nevertheless be
+useful as long as they are treated with due caution. Use
+.B \-x
+to avoid this
+extra information: this will reduce the length of the generated gpx files.
+.TP
+.BI \-w
+By default, mov2gpx will refuse to overwrite an existing output file.  Set
+.B \-w
+to allow rewriting.
+.PP
+mov2gps uses a go library to handle the flags. That is less flexible
+than usual, so flags can not be concatenated, and it requires strict
+spacing. For example,
+.B \-g0
+will fail: use
+.B \-g
+0.
+.SH EXAMPLES
+.PP
+.EX
+mov2gpx dashcam.MOV
+.EE
+.RS
+The standard case: silently write the gps information into dashcam.gpx.
+.RE
+.P
+.EX
+mov2gpx -w -v *.MOV
+.EE
+.RS
+Process all the MOV files in the current directory, and write the gpx output
+files into this same directory, overwriting any that are already present.
+Report the name of each file as it is examined.
+.RE
+.P
+.EX
+mov2gpx -v -O /tmp/ *.mov
+.EE
+.RS
+Handle all the video files with a .mov extension in the current directory, and
+write the resulting gpx files into the /tmp/ directory.
+.RE
+.EE
+.P
+.EX
+mov2gpx -g 0 journey.MOV
+.EE
+.RS
+Write journey.gpx in gpx version 1.0 for use with programs that don't fully
+support gpx 1.1 .
+.RE
+.P
+.EX
+mov2gpx -O - file.MOV |grep "<time>" |less
+.EE
+.RS
+Examine the time stamps in file.MOV.
+.RE
+.P
+.EX
+mov2gpx -g 0 -O - file.mov |grep "<sat>" |less
+.EE
+.RS
+Check the number of satellites acquired in file.mov
+.RE
+.EE
+.P
+.EX
+mov2gpx -g 0 -O - *.MOV |grep "<sat>" |less
+.EE
+.RS
+Scan the number of satellites used on a long journey.
+.RE
+.P
+.EX
+mov2gpx -O - unknown.mov | less
+.EE
+.RS
+Check for gps in unknown.mov.
+.RE
+.P
+.EX
+mov2gpx -v -O - video.MOV > /dev/null 
+.EE
+.RS
+Examine camera model and firmware if available.
+.RE
+.P
+.EX
+mov2gpx *.MOV ;ip="";for f in *.MOV; do ip="$ip -f ${f%.MOV}.gpx" ;done ;
+ gpsbabel -i gpx $ip -o gpx -F whole_journey.gpx
+.EE
+.RS
+Process all MOV video files in the current directory & use gpsbabel to merge
+the resulting gpx files into a single file. This will leave the individual
+gpx files. For unix like systems.  gpsprune is also useful for this operation,
+but uses a GUI.
+.RE
+.P
+.EX
+mov2gpx -g 0 -v -O - record.MOV | viking /dev/stdin
+.EE
+.RS
+Extract the gpx track from record.MOV and pass it to viking.
+.RE
+.P
+.EX
+mov2gpx -v -O - record.MOV | gpxinfo /dev/stdin
+.EE
+.RS
+Summarise the gpx information in record.MOV using gpxinfo.
+.RE
+.P
+.
+.SH NOTES
+mov2gpx follows the unix philosophy of doing one thing and doing it well.
+Thus there is no facilty to combine all the generated gpx files when
+multiple video files are read. Other programs like gpsbabel, gpsprune
+or viking can be used to combine gpx files as in one of the more complex
+examples above.
+.PP
+mov2gpx is likely to generate an empty gpx track when reading MOV files which
+do not include gps information, or when that information is not in the expected
+form, but there are no guarantees.
+.PP
+mov2gps is available 
+.UR https://github.com/clarified/mov2gps
+from here:
+.UE
+.SH SEE ALSO
+Useful programs for gpx include
+.B gpsbabel
+(1),
+.B gpsprune
+(1),
+.B viking
+(1),
+.B gpxinfo
+(1),
+.B gpxviewer
+(1) and
+.B josm
+.PP
+The units used in gpx files are specified in
+.UR http://www.topografix.com/GPX/1/1/gpx.xsd
+the gpx.xsd specification
+.UE
+which is not easy to read without a good knowledge of xml. A summary is
+that all times are UTC, all coordinates WGS84, and most units are metric.
+Thus elevations are WGS84-referenced.
+
+
+.SH AUTHORS
+A\~E\~Lawrence wrote
+.B mov2gpx
+which was forked from 
+.UR github.com/kbsriram/dcutils/go/cmd/sggps
+.B sggps 
+.UE
+by K\~B\~Sriram.
+

@@ -1,0 +1,34 @@
+The kent folding extensions for vim by Mario Schweigler are 
+available from 
+  https://www.informatico.de/kent-vim-ext/ .
+
+The older version did not support the go language, so you may need to
+apply the patch in this directory. The patch adds support for several
+extra languages including go.
+
+If you do not already have ~/.vim and ~/.gvimrc subdirectories you
+can cd $HOME and unpack kent-vim-ext-rc-unix.tar.gz there:
+
+$ tar -xzf kent-vim-ext-rc-unix.tar.gz
+
+Then enter the ~/.vim directory and unpack kent-vim-ext-runtime.tar.xz:
+
+$ tar -xzf kent-vim-ext-runtime.tar.gz
+
+One of the files which is unpacked is kent-programming.vim. 
+
+The old version has a sha1 checksum of
+   d2efff1787039e3fbada1309d1b60cc797105558 :
+$ sha1sum kent-programming.vim 
+d2efff1787039e3fbada1309d1b60cc797105558  kent-programming.vim
+
+If you have that version you need to apply the patch:
+
+$ patch -p1 <kent-programming.vim.patch 
+
+When you use vim, documentation is available via :help kent-*
+
+A screenshot of part of the folded source is included in this directory:
+folding.png. This should give an idea of how the folded sources should
+look in vim.
+

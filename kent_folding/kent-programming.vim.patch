@@ -1,0 +1,34 @@
+--- a/kent-programming.vim	2003-05-24 14:55:35.000000000 +0100
++++ b/kent-programming.vim	2019-03-26 13:00:54.384236329 +0000
+@@ -105,7 +105,7 @@
+ function GetComment(lang, which)
+ 
+   " occam (filetype=occam)
+-  if a:lang == 'occam'
++  if a:lang == 'occam' || a:lang == 'haskell'
+     if a:which == 0|return '--'|else|return ''|endif
+   " Vim script (filetype=vim)
+   elseif a:lang == 'vim'
+@@ -116,7 +116,7 @@
+   " Java (filetype=java)
+   " C (filetype=c)
+   " C++ (filetype=cpp)
+-  elseif a:lang == 'java' || a:lang == 'c' || a:lang == 'cpp'
++  elseif a:lang == 'java' || a:lang == 'c' || a:lang == 'cpp' || a:lang == 'pov' || a:lang == 'go'
+     if a:which == 0|return '//'|elseif a:which == 2|return '/*'|
+         \elseif a:which == 3|return '*/'|else|return ''|endif
+   " Pascal (filetype=pascal)
+@@ -124,11 +124,11 @@
+     if a:which == 0|return '(*'|elseif a:which == 1|return '*)'|
+     elseif a:which == 2|return '{'|elseif a:which == 3|return '}'|else|return ''|endif
+   " TeX (filetype=tex)
+-  elseif a:lang == 'tex' || a:lang == 'bib'
++  elseif a:lang == 'tex' || a:lang == 'bib' || a:lang == 'sty'
+     if a:which == 0|return "%"|else|return ''|endif
+   " HTML (filetype=html)
+   " XML (filetype=html)
+-  elseif a:lang == 'html' || a:lang == 'xml'
++  elseif a:lang == 'html' || a:lang == 'xml' || a:lang == 'gpx' || a:lang == 'xsd'
+     if a:which == 0|return '<!--'|elseif a:which == 1|return '-->'|else|return ''|endif
+   " Unix shell script (filetype=sh)
+   " Python (filetype=python)

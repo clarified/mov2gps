@@ -1,0 +1,14 @@
+Binaries
+========
+
+This directory contains compressed archives each containing the mov2gpx binary
+for a particular operating system and bare documentation in the form of a
+manual page 
+
+sha256_checksums.txt.asc contains sha256 checksums which can be used to confirm
+correct downloads. On unix style systems, that can be done with
+
+$ sha256sum -c sha256_checksums.txt.asc
+
+run in the directory containing the archive(s).
+
